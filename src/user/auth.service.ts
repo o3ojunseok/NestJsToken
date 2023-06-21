@@ -39,4 +39,22 @@ export class AuthService {
       throw new UnauthorizedException();
     }
   }
+
+  async validateRefreshToken(refreshToken: string) {
+    const user = await this.userRepository.findOne({ where: { refresh_token: refreshToken }});
+    if (!user) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  
+    // 리프레시 토큰이 유효하다면 새로운 액세스 토큰을 발급합니다.
+    const newAccessToken = await this.generateAccessToken(user.username);
+  
+    // 검증된 사용자 정보와 새로운 액세스 토큰을 반환합니다.
+    return {
+      user,
+      accessToken: newAccessToken,
+    };
+  }  
 }
+
+

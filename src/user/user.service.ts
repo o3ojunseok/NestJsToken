@@ -72,11 +72,8 @@ export class UserService {
         if (!refreshToken) {
           refreshToken = await this.authService.generateRefreshToken(loginData.refresh_token);
         }
-        return { 
-          user,
-          accessToken,
-          refreshToken,
-        };
+        const result = Object.assign(user,refreshToken);
+        return result;
       } catch (err) {
         this.logger.error(err);
         throw new InternalServerErrorException(err);
