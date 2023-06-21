@@ -8,4 +8,6 @@ export class LoginUserDto extends PartialType(CreateUserDto) {
 
     @IsString()
     password: string;
+
+    refresh_token: string;
 }

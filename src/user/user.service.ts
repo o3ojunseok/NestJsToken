@@ -38,9 +38,9 @@ export class UserService {
   async signUp(createData: CreateUserDto) {
     const user = await this.userRepository.findOneUserName(createData.username);
 
-    if (user) {
-      throw new UnauthorizedException('already exist user!');
-    }
+    // if (user) {
+    //   throw new UnauthorizedException('already exist user!');
+    // }
     try {
       // const hashedPassword = await bcrypt.hash(createData.password, 10);
       const user = new User();
@@ -48,16 +48,7 @@ export class UserService {
       user.password = createData.password;
 
       await this.userRepository.createUser(user);
-
-      const accessToken = await this.authService.generateAccessToken(user.username);
-      const refreshToken = await this.authService.generateRefreshToken(user.username);
-      const validatedUser = await this.authService.validateToken(accessToken); 
-      return { 
-        user,
-        accessToken,
-        refreshToken,
-        validatedUser
-      }
+      return user
     } catch (err) {
       this.logger.error(err);
       throw new InternalServerErrorException(err);
@@ -74,12 +65,33 @@ export class UserService {
       // throw new UnauthorizedException('incorrect your password');
     // }
     try {
-      const { password, ...result } =  user;
-      const accessToken = await this.jwtService.sign(result);
-      result['accessToken'] = accessToken;
+      try {
+        const accessToken = await this.authService.generateAccessToken(loginData.username);
+        let refreshToken = user.refresh_token;
 
-      return result;
+        if (!refreshToken) {
+          refreshToken = await this.authService.generateRefreshToken(loginData.refresh_token);
+        }
+        return { 
+          user,
+          accessToken,
+          refreshToken,
+        };
+      } catch (err) {
+        this.logger.error(err);
+        throw new InternalServerErrorException(err);
+      }
 
+    } catch (err) {
+      this.logger.error(err);
+      throw new InternalServerErrorException(err);
+    }
+  }
+
+
+  async logout(token: string) {
+    try {
+      await this.authService.validateToken(token);
     } catch (err) {
       this.logger.error(err);
       throw new InternalServerErrorException(err);
