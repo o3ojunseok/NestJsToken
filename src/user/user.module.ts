@@ -3,12 +3,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AccessTokenStrategy } from './jwt.access.strategy';
-import { refreshTokenStrategy } from './jwt.refresh.strategy';
+// import { AccessTokenStrategy } from './jwt.access.strategy';
+// import { refreshTokenStrategy } from './jwt.refresh.strategy';
 import UserController from './user.controller';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
+import { AuthService } from './auth.service';
 
 @Module({
   imports: [
@@ -24,9 +25,9 @@ import { UserService } from './user.service';
           expiresIn: '300s', 
         }
       })
-    })
+    }),
   ],
   controllers: [UserController],
-  providers: [UserService, UserRepository ,AccessTokenStrategy, refreshTokenStrategy]
+  providers: [UserService, UserRepository , AuthService]
 })
 export class UserModule {}

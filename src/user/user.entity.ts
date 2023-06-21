@@ -15,4 +15,7 @@ export class User {
     @Column({ nullable: true })
     @Exclude()
     refresh_token?: string;
+
+    @Column({ type:'timestamp', precision: 6 , nullable: true })
+    refresh_token_expires_at: Date;
 }

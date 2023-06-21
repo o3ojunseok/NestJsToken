@@ -1,11 +1,11 @@
 import { InternalServerErrorException, Injectable, Logger, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class UserService {
@@ -14,6 +14,7 @@ export class UserService {
   constructor(
     private userRepository: UserRepository,
     private jwtService: JwtService,
+    private authService: AuthService,
     ) {}
 
   async findAll() {
@@ -41,14 +42,17 @@ export class UserService {
       throw new UnauthorizedException('already exist user!');
     }
     try {
-      const hashedPassword = await bcrypt.hash(createData.password, 10);
+      // const hashedPassword = await bcrypt.hash(createData.password, 10);
       const user = new User();
       user.username = createData.username;
-      user.password = hashedPassword;
+      user.password = createData.password;
 
       await this.userRepository.createUser(user);
 
-      return user;
+        const accessToken = await this.authService.generateAccessToken(user.username);
+        // const refreshToken = await this.authService.generateRefreshToken(newUser.user_id);
+        // const validatedUser = await this.authService.validateToken(accessToken); 
+        console.log(accessToken)
     } catch (err) {
       this.logger.error(err);
       throw new InternalServerErrorException(err);
@@ -60,10 +64,10 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('who are you?');
     } 
-    const equalPassword = await bcrypt.compare(loginData.password, user.password);
-    if (!equalPassword) {
-      throw new UnauthorizedException('incorrect your password');
-    }
+    // const equalPassword = await bcrypt.compare(loginData.password, user.password);
+    // if (!equalPassword) {
+      // throw new UnauthorizedException('incorrect your password');
+    // }
     try {
       const { password, ...result } =  user;
       const accessToken = await this.jwtService.sign(result);
