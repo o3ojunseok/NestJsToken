@@ -50,9 +50,13 @@ export class UserService {
       await this.userRepository.createUser(user);
 
         const accessToken = await this.authService.generateAccessToken(user.username);
-        // const refreshToken = await this.authService.generateRefreshToken(newUser.user_id);
-        // const validatedUser = await this.authService.validateToken(accessToken); 
-        console.log(accessToken)
+        const refreshToken = await this.authService.generateRefreshToken(user.username);
+        const validatedUser = await this.authService.validateToken(accessToken); 
+        return { 
+          accessToken,
+          refreshToken,
+          validatedUser
+        }
     } catch (err) {
       this.logger.error(err);
       throw new InternalServerErrorException(err);
